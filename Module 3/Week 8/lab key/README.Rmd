@@ -1,0 +1,144 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+## Analytical Workflows Lab: modeling species distributions with Random Forest
+
+The format of this lab is a bit different. Instead of R notebooks, we will be using R scripts to run our analysis. R scripts are files of R code that are executed from the terminal (a.k.a. the command line) and run a specific program repeatedly. Scripts are very useful when similar analyses need to be repeated regularly on different data sets. They can also be more reproducible than running analysis in a notebook because the environment (the variables and data the program has access to) is reset every time the code runs. Finally, learning to write code in scripts and work from the command line is often a prerequisite for working on high-performance and cloud computing platforms. This final point is very relevant for machine learning, which is often computationally expensive.
+
+This directory contains data from the Alaska ground fish trawl survey conducted by the National Oceanic and Atmospheric Administration (NOAA). The survey has sampled fish and invertebrate populations in the Bering every year since 1986, providing insights into changes in the distribution and abundance of these populations over time.
+
+The goal of this lab will be to model relationships between species abundance and environmental characteristics using random forest. We will use the random forest models to identify and visualize the relationship between species and the environment. We will also create a workflow to tune the algorithms' hyperparameters to the dataset and estimate its performance on new data using cross-validation.
+
+### Learning objectives
+
+Learn to work with data analysis pipelines built with R scripts Run R programs from the command line (Terminal) Build a random forest model with the R randomForest library Visualize patterns covered by the random forest algorithm. Code cross-validation and hyperparameter tuning routines Run ML algorithms in parallel using the R parallel library
+
+### Instructions and Questions
+
+The rest of this file contains step-by-step instructions for how to run the R scripts and complete the lab. Some of the steps will only require you to run pre-prepared R scripts, while others will require you to complete missing code chunks in existing files.\
+Steps 7 and 9 both include numbered questions that you should be able to answer based on the analysis up to that point. Please write short-form answers to these questions (a few sentences or so) in a Word document or text file to include with your code.
+
+#### Step 0: Load packages
+
+Open up the file load_packages.R in the `src` directory and run the file from the console by clicking the run icon in the top right hand side of the text editor. If this does not work you can also run the file line by line by highlighting individual lines or groups of lines before hitting the run icon.  
+
+#### Step 1: Check out the structure of the directory
+
+Open up the Terminal window in R Studio or in a separate tab, open up the command line, and navigate to the ML_workflows_lab directory using the `cd` command. Typing `cd ~/absolute/path/to/directory` will take you there. For example, I saved the lab in my documents folder, so I typed `cd ~/Documents/ML_workflows_lab`. Check that you successfully navigated to the directory by typing `pwd`; this will tell you your current working directory.
+
+Check out the structure of the directory using the `ls` command. This will print out all of the files and folders in the current working directory. You can see what is in each sub-folder by navigating there with the `cd folder_name` command or by typing `ls folder_name`. If you navigate to a subfolder with `cd`, you can use `cd ..` to return to the original directory.
+
+Take note of each subfolder in the directory. This structure, which separates the original raw data files, data that have been processed for analysis, the scripts that run the analysis, and results, helps me keep relatively complicated projects organized.
+
+#### Step 2: run the pre-prepared data processing file
+
+Run the data processing file `process_ground_fish_trawl_data.R` in the src folder. This file will create two data sets, one indicating the presence of a user-defined species in the survey and another with the abundances of the species when present. The presence and abundance data are combined with a set of environmental covariates that include the water depth, temperature, and time of the year, along with several other factors. You can run the file with the `Rscript` command. This command requires the path to the R script you want to run and any additional arguments that file requires.
+
+```         
+Rscript path/to/script.R arguments ...
+```
+
+The file `process_ground_fish_trawl_data.R` requires the name of the species you wish to analyze to be passed to the script as an argument. You can choose from "Pacific cod", "Alaska skate", "arrowtooth flounder", "Aleutian skate", "snow crab", and "Arctic cod".
+
+If you cannot get the code to run in the terminal you can run this file from the console, by opening the file replacing the definition `species <- args[1]` on line 8 with your species of choice and hitting the source icon on the top right hand side of the R studio window. 
+
+
+#### Step 3: Explore the contents of the new dataset Running the data processing script will create two data sets in the data file. Open these to see the variables they include, the number of observations, and other characteristics of the dataset. When working with scripts, I recommend opening a notebook file called tests.Rmd that can be used to test new pieces of code, and used to open new data sets. You can also type code into an R script (.R file extension) and run the code from the R console by highlighting it and hitting the green run arrow in the top right-hand side of the RStudio text editor.
+
+#### Step 4: Make plots of the species distribution using EDA_plots.R
+
+Run the `EDA_plots.R` file. This script also requires that you pass the name of the species you wish to analyze as an argument to the `Rscript` command. This file will generate several maps showing the distribution and the abundance of the species in each survey year. These plots will be saved as .png files to the `results/figures` directory.
+
+#### Step 5: Run the random forest analysis
+
+Open the `build_random_forest.R` file in the `src` directory. This file contains an outline of the code required to train a random forest model on the Alaska ground fish trawl dataset. You will need to add code in several places for the file to work correctly. Each step you need to complete will be indicated by a comment with instructions on what the code should do. You will probably want to test your code as you go to make sure the code for each new step works as you intend it to. I like to use the R console for these testing steps. You can run sections of the file from the console by highlighting the code and hitting the run icon on the top right side of the text editor window. Run the finished R script from the Terminal. You will need to provide values for each parameter passed as arguments to the script with the call to `args = commandArgs(trailingOnly=TRUE)` at the top of the file.
+
+#### Step 6: Visualize the trained model
+
+Open the `varImpPlot.R` and the `partial_dependence_plot.R` files. These contain partial code to plot the relative importance of each variable included in the model and their relationship with the presence and abundance of the species, respectively.
+
+You will need to fill in the missing code in these files to plot and save the variable importance  and partial dependence plots.  
+
+#### Step 7: Run the analysis for a new species
+
+Repeat the analysis by calling each script from the command line, changing the species name. Compare the variable importance and partial dependence plots between the two species. 
+- Do these species live in similar or different habitats? 
+- Which would you expect to increase in abundance as climate changes increase temperatures in the Bering Sea?
+
+Now type the command `make` into the terminal. This will activate a file I added called Makefile. The Makefile contains predefined sets of commands that can be run in the terminal. Running the `make run_analysis` command will run all of the R scripts we have made so far. You can choose which species to run them on by changing the `SPECIES` keyword argument. For example, running `make run_analysis SPECIES='"Pacific cod"'` will repeat all the analyses for Pacific cod.
+
+We won't have to talk about make files in depth, but I wan to show you how powerful they can be for building data analysis pipelines. They allow you to write programs using the commands you would otherwise pass to the terminal one by one. This allows you to automate data analyses that need to be run repeatedly on new data sets or with different parameters. you can see how these files work by opening the Makefile in a text editor or R Studio.
+
+#### Step 8: Tune the random forest hyperparameters (choose between step 8, 9 or both)
+
+The default hyperparameter value for random forest in the randomForest library usually works quite well, but tuning these parameters can improve model performance in some cases.
+
+The hyperparameter_selection.R file contains the outline of code to run a two-stage hyperparameter tuning and cross-validation routine. The procedure starts by breaking the data set up into a training and a testing set. The training data set is used to train the model and tune the hyperparameters. The testing data set is reserved to test the final model.
+
+The hyperparameters are selected by training the model with the full range of hyperparameter values that we wish to test. The model's performance with each hyperparameter value is evaluated by running a cross-validation routine that breaks the original training data set into sub-training and testing data sets.
+
+The hyperparameter_selection.R file is set up to run a cross-validation routine that leaves individual years out of the training data set to test the model's performance. The performance of each hyperparameter is estimated by repeatedly training and testing the model, leaving one year out of the data set.
+
+#### Step 9: Set up a cross validaiton routine using the caret library
+
+Check out the file `hyperparameter_selection_caret.R` this file has code to run a cross validation analysis leaving random data point out of the testing set and leaving blocks of consecutive years out of the data set. Complete the code using the caret library to run the cross validation tests. Plot the cross validation results from the Random testing sets and the testing sets constructed by removing consecutive years of data. 
+
+- What do the difference in accuracy estimates tell you about the structure of the data set? 
+
+
+#### Step 10: Think about some other cross-validation routines
+
+The cross-validation routine that we used in step 8 and 9 is designed to account for correlations in the data set within individual years. The procedure estimates how well the model might perform if we collected a new year of data and tested the model against it. 
+- How sensitive is the model's performance to the hyperparameter that you chose? 
+- How might we change the cross-validation procedure to account for the spatial structure of the data set?
+- Could the current cross-validation routine be modified to provide a better estimate of the model's forecasting skill? How might you design a cross-validation routine to account for the spatial and temporal structure simultaneously?
+
+
+### Some code to help you check out the data set before starting
+
+```{r}
+setwd("/Users/johnbuckner/Documents/ML_workflows_lab")
+AGFTS <- read.csv("raw_data/CATCH AND HAUL DATA .csv")
+head(AGFTS)
+```
+
+### Species included in the data set
+
+```{r}
+unique(AGFTS$Taxon.common.name)
+```
+
+### Variables included in the data set (We will only be using a small number of these)
+
+```{r}
+names(AGFTS)
+```
+
+### Area monitored by the ground fish survey
+
+```{r}
+library(ggplot2)
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(dplyr)
+
+# Get world map data as sf object
+world <- ne_countries(scale = "medium", returnclass = "sf")
+# Filter for  USA (includes Alaska)
+bering_countries <- world %>%
+  filter(admin %in% c("United States of America"))
+# Define plot limits (Bering Sea area)
+xlim <- c(-179,-150); ylim <- c(50, 75)   
+# Plot
+ggplot() +
+  geom_sf(data = bering_countries, fill = "lightgray", color = "black") +
+  coord_sf(xlim = xlim, ylim = ylim, expand = FALSE) +
+  theme_minimal() +
+  geom_point(data = AGFTS, 
+             mapping = aes(x = Start.longitude..decimal.degrees., 
+                 y = Start.latitude..decimal.degrees.),
+             size = 0.25)
+```
